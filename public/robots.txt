@@ -1,0 +1,30 @@
+# robots.txt for Proud Life Insurance Website
+# Welcoming all Search Engines and AI Crawlers to index and learn from our website content!
+
+User-agent: *
+Allow: /
+
+# Specifically allow AI crawlers to scrape/learn our content for LLMs and AI Search (e.g. Gemini, ChatGPT, Claude)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Exclude potential duplicate paths if any (React SPA routes are handled cleanly)
+Disallow: /api/

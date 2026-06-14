@@ -1,7 +1,51 @@
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Phone, MessageCircle, Facebook, MapPin, Mail, Instagram, Clock, ShieldCheck, TrendingUp } from 'lucide-react';
 
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    subject: 'โปรดเลือกหัวข้อติดต่อ',
+    message: ''
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Construct pre-filled mailto content for page contact form
+    const subjectLine = `[Proud Life Insurance Website] ติดต่อหัวข้อ: ${formData.subject}`;
+    const mailBody = `สวัสดีค่ะ พี่ฝ้าย\n\nมีผู้ติดต่อมาทางหน้าเว็บ 'ติดต่อเรา' ของ Proud Life Insurance มีรายละเอียดดังนี้ค่ะ:\n\n` +
+      `- ชื่อผู้ส่ง: ${formData.name}\n` +
+      `- เบอร์โทรศัพท์: ${formData.phone}\n` +
+      `- อีเมลติดต่อกลับ: ${formData.email || 'ไม่ได้ระบุ'}\n` +
+      `- หัวข้อติดต่อ: ${formData.subject}\n` +
+      `- ข้อความฝากไว้: ${formData.message}\n\n` +
+      `-----------------------------------------\n` +
+      `ข้อความนี้สร้างขึ้นโดยอัตโนมัติจากเว็บบล็อกของท่าน เพื่ออำนวยความสะดวกในการติดต่อกลับลูกค้าค่ะ`;
+
+    const mailtoUri = `mailto:proudlifeinsurance@gmail.com?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(mailBody)}`;
+    
+    // Launch mail window
+    window.location.href = mailtoUri;
+    
+    setIsSubmitted(true);
+    
+    // Auto-reset
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        subject: 'โปรดเลือกหัวข้อติดต่อ',
+        message: ''
+      });
+    }, 5000);
+  };
+
   const contactChannels = [
     { 
       label: 'โทรสายตรง', 
@@ -139,7 +183,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-bold mb-1">อีเมล</h4>
-                      <p className="text-on-surface/70">angsirin@gmail.com</p>
+                      <p className="text-on-surface/70">proudlifeinsurance@gmail.com</p>
                     </div>
                   </div>
                   <div className="flex gap-5">
@@ -178,43 +222,96 @@ export default function Contact() {
 
             <div className="bg-surface-container-lowest p-12 rounded-[3rem] border border-surface-container shadow-sm">
               <h2 className="text-3xl font-black text-primary mb-10 text-center">ส่งข้อความหาเรา</h2>
-              <p className="text-center text-on-surface/60 mb-12">
-                หากคุณมีข้อสงสัยหรือต้องการข้อมูลเพิ่มเติม สามารถส่งข้อความหาเราได้ทันที 
-                ทีมงานจะติดต่อกลับโดยเร็วที่สุด
-              </p>
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-on-surface/50">ชื่อของคุณ</label>
-                    <input className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all" placeholder="คุณดีใจ มีความสุข" />
+              
+              {!isSubmitted ? (
+                <>
+                  <p className="text-center text-on-surface/60 mb-12">
+                    หากคุณมีข้อสงสัยหรือต้องการข้อมูลเพิ่มเติม สามารถส่งข้อความหาเราได้ทันที 
+                    ทีมงานจะติดต่อกลับโดยเร็วที่สุด
+                  </p>
+                  <form className="space-y-6" onSubmit={handleSubmit}>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-on-surface/50">ชื่อของคุณ</label>
+                        <input 
+                          required
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all font-bold" 
+                          placeholder="คุณดีใจ มีความสุข" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-on-surface/50">เบอร์โทรศัพท์</label>
+                        <input 
+                          required
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all font-bold" 
+                          placeholder="08x-xxx-xxxx" 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-on-surface/50">อีเมล</label>
+                      <input 
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all font-bold" 
+                        placeholder="your@email.com" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-on-surface/50">หัวข้อติดต่อ</label>
+                      <select 
+                        value={formData.subject}
+                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                        className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all appearance-none font-bold"
+                      >
+                        <option value="โปรดเลือกหัวข้อติดต่อ">โปรดเลือกหัวข้อติดต่อ</option>
+                        <option value="ขอข้อมูลแผนประกัน">ขอข้อมูลแผนประกัน / ออกแบบแผน</option>
+                        <option value="สอบถามเบี้ยประกันภัย">สอบถามเบี้ยประกันภัย</option>
+                        <option value="นัดหมายเวลาปรึกษาออนไลน์">นัดหมายเวลาปรึกษาออนไลน์</option>
+                        <option value="สอบถามสถานะกรมธรรม์">สอบถามสถานะกรมธรรม์</option>
+                        <option value="แจ้งปัญหาการใช้งาน">แจ้งปัญหาการใช้งาน</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-on-surface/50">ข้อความ</label>
+                      <textarea 
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="w-full bg-white border border-surface-container-high rounded-[2rem] px-6 py-3 outline-none focus:border-primary transition-all h-32 resize-none font-bold" 
+                        placeholder="พิมพ์ข้อความของคุณที่นี่..." 
+                      />
+                    </div>
+                    <button type="submit" className="w-full bg-primary text-white py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all cursor-pointer">
+                      ส่งข้อความ
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="py-16 text-center space-y-6">
+                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-10 h-10">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-on-surface/50">เบอร์โทรศัพท์</label>
-                    <input className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all" placeholder="08x-xxx-xxxx" />
-                  </div>
+                  <h3 className="text-2xl font-black text-primary">ส่งข้อความสำเร็จ!</h3>
+                  <p className="text-on-surface/70 leading-relaxed max-w-sm mx-auto font-medium">
+                    ระบบได้แปลงข้อความเป็นอีเมลเพื่อเตรียมส่งให้พี่ฝ้ายเรียบร้อยแล้วค่ะ<br/>
+                    พี่ฝ้ายจะรีบอ่านและติดต่อกลับหาท่านโดยเร็วที่สุดนะคะ
+                  </p>
+                  <p className="text-xs font-bold text-secondary tracking-widest animate-pulse">
+                    THANK YOU FOR TRUSTING PROUD LIFE INSURANCE
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-on-surface/50">อีเมล</label>
-                  <input className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all" placeholder="your@email.com" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-on-surface/50">หัวข้อติดต่อ</label>
-                  <select className="w-full bg-white border border-surface-container-high rounded-full px-6 py-3 outline-none focus:border-primary transition-all appearance-none" defaultValue="โปรดเลือกหัวข้อติดต่อ">
-                    <option>โปรดเลือกหัวข้อติดต่อ</option>
-                    <option>ขอข้อมูลแผนประกัน</option>
-                    <option>สอบถามสถานะกรมธรรม์</option>
-                    <option>แจ้งปัญหาการใช้งาน</option>
-                    <option>อื่นๆ</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-on-surface/50">ข้อความ</label>
-                  <textarea className="w-full bg-white border border-surface-container-high rounded-[2rem] px-6 py-3 outline-none focus:border-primary transition-all h-32" placeholder="พิมพ์ข้อความของคุณที่นี่..." />
-                </div>
-                <button className="w-full bg-primary text-white py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                  ส่งข้อความ
-                </button>
-              </form>
+              )}
             </div>
           </div>
         </div>

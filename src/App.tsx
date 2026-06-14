@@ -55,13 +55,24 @@ import { useConsultation } from './context/ConsultationContext';
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mobileInsuranceOpen, setMobileInsuranceOpen] = useState(false);
+  const [mobileSubCategoriesOpen, setMobileSubCategoriesOpen] = useState<Record<string, boolean>>({});
   const { isOpen: isConsultModalOpen, openConsultation, closeConsultation } = useConsultation();
   const location = useLocation();
+
+  const toggleSubCategory = (title: string) => {
+    setMobileSubCategoriesOpen(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0);
     setIsMenuOpen(false);
+    setMobileInsuranceOpen(false);
+    setMobileSubCategoriesOpen({});
   }, [location.pathname]);
 
   // SEO Structured Data (JSON-LD)
@@ -172,7 +183,7 @@ export default function App() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 glass-nav">
+      <nav className="fixed top-0 w-full z-[90] glass-nav">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
             <img 
@@ -247,89 +258,109 @@ export default function App() {
           </div>
 
           <button 
-            className="md:hidden text-primary"
+            className="md:hidden text-primary p-2 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer transition-transform active:scale-95"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
           >
             {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: '100%' }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: '100%' }}
-              className="fixed inset-0 z-[60] bg-white p-6 md:hidden overflow-y-auto"
-            >
-              <div className="flex justify-between items-center mb-12">
-                <img src="/logo_2.webp" alt="Logo" className="h-10 w-auto" />
-                <button onClick={() => setIsMenuOpen(false)} className="text-primary">
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="space-y-6">
-                {navLinks.map((link) => (
-                  <div key={link.name} className="space-y-4">
-                    {link.subItems ? (
-                      <>
-                        <div className="text-2xl font-bold text-on-surface block">
-                          {link.name}
-                        </div>
-                        <div className="pl-4 space-y-4 border-l-2 border-primary/10">
-                          {link.subItems.map((sub: any) => (
-                            <div key={sub.title || sub.name} className="space-y-3">
-                              <Link 
-                                to={sub.href}
-                                className="text-lg font-bold text-on-surface-variant block flex items-center justify-between"
-                                onClick={() => setIsMenuOpen(false)}
-                              >
-                                {sub.title || sub.name}
-                              </Link>
-                              
+        {/* Mobile Backdrop Overlay - closes menu when clicked */}
+        <div 
+          className={`fixed inset-0 bg-black/40 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300 ${
+            isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setIsMenuOpen(false)}
+        />
+
+        {/* Mobile Dropdown Menu (Drops down from bottom of Fixed Nav) */}
+        <div
+          className={`absolute top-full left-0 w-full bg-white shadow-2xl border-t border-primary/5 md:hidden overflow-y-auto transition-all duration-300 ease-in-out transform origin-top z-50 ${
+            isMenuOpen 
+              ? 'opacity-100 scale-y-100 pointer-events-auto border-b border-primary/10' 
+              : 'opacity-0 scale-y-95 pointer-events-none'
+          }`}
+          style={{ maxHeight: 'calc(100vh - 80px)' }}
+        >
+          <div className="p-6 space-y-6">
+            {navLinks.map((link) => (
+              <div key={link.name} className="space-y-4">
+                {link.subItems ? (
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => setMobileInsuranceOpen(!mobileInsuranceOpen)}
+                      className="w-full flex items-center justify-between py-2 text-xl font-bold text-on-surface hover:text-primary transition-colors text-left focus:outline-none cursor-pointer"
+                    >
+                      <span>{link.name}</span>
+                      <ChevronDown 
+                        size={20} 
+                        className={`text-primary transition-transform duration-300 ${mobileInsuranceOpen ? 'rotate-180' : ''}`} 
+                      />
+                    </button>
+                    
+                    {/* Collapsible Category Cards */}
+                    {mobileInsuranceOpen && (
+                      <div className="pl-4 space-y-4 border-l-2 border-primary/10 mt-2">
+                        {link.subItems.map((sub: any) => (
+                          <div key={sub.title || sub.name} className="space-y-2">
+                            <button
+                              onClick={() => toggleSubCategory(sub.title || sub.name)}
+                              className="w-full flex items-center justify-between py-1.5 text-base font-bold text-on-surface-variant hover:text-primary transition-colors text-left focus:outline-none cursor-pointer"
+                            >
+                              <span>{sub.title || sub.name}</span>
                               {sub.subItems && (
-                                <div className="pl-4 space-y-3 border-l-2 border-secondary/20">
-                                  {sub.subItems.map((child: any) => (
-                                    <Link 
-                                      key={child.name}
-                                      to={child.href}
-                                      className="text-base font-medium text-on-surface-variant/80 block"
-                                      onClick={() => setIsMenuOpen(false)}
-                                    >
-                                      {child.name}
-                                    </Link>
-                                  ))}
-                                </div>
+                                <ChevronDown 
+                                  size={16} 
+                                  className={`text-on-surface-variant/70 transition-transform duration-300 ${mobileSubCategoriesOpen[sub.title || sub.name] ? 'rotate-180' : ''}`} 
+                                />
                               )}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <Link 
-                        to={link.href}
-                        className={`block py-2 text-2xl font-bold ${link.active ? 'text-primary' : 'text-on-surface'}`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {link.name}
-                      </Link>
+                            </button>
+                            
+                            {sub.subItems && mobileSubCategoriesOpen[sub.title || sub.name] && (
+                              <div className="pl-4 space-y-2 border-l-2 border-secondary/20 mt-1">
+                                {sub.subItems.map((child: any) => (
+                                  <Link 
+                                    key={child.name}
+                                    to={child.href}
+                                    className="text-sm font-medium text-on-surface-variant/80 block py-1.5 hover:text-primary transition-colors"
+                                    onClick={() => {
+                                      setIsMenuOpen(false);
+                                      setMobileInsuranceOpen(false);
+                                    }}
+                                  >
+                                    {child.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                ))}
-                <button 
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openConsultation();
-                  }}
-                  className="btn-primary w-full py-4 text-xl"
-                >
-                  ปรึกษาฟรี
-                </button>
+                ) : (
+                  <Link 
+                    to={link.href}
+                    className={`block py-2 text-xl font-bold transition-colors ${link.active ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            ))}
+            <button 
+              onClick={() => {
+                setIsMenuOpen(false);
+                openConsultation();
+              }}
+              className="btn-primary w-full py-4 text-lg cursor-pointer"
+            >
+              ปรึกษาฟรี
+            </button>
+          </div>
+        </div>
       </nav>
 
       <Routes>

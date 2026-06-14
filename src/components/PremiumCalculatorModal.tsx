@@ -19,15 +19,30 @@ export const PremiumCalculatorModal: React.FC<PremiumCalculatorModalProps> = ({ 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd send this to a backend or Google Sheet
-    console.log('Form Submitted:', { productName, ...formData });
+    
+    // Construct pre-filled mailto content for calculation
+    const subject = `[Proud Life Insurance] คำนวณเบี้ยแผน: ${productName}`;
+    const mailBody = `สวัสดีค่ะ พี่ฝ้าย\n\nมีลูกค้ากดเช็กเบี้ยประกันแผน "${productName}" จากหน้าเว็บไซต์ มีรายละเอียดดังนี้ค่ะ:\n\n` +
+      `- แผนประกัน: ${productName}\n` +
+      `- เพศ: ${formData.gender || 'ไม่ได้ระบุ'}\n` +
+      `- อายุ: ${formData.age} ปี\n` +
+      `- ทุนประกันที่ต้องการ: ${formData.sumInsured} บาท\n` +
+      `- ช่องทางติดต่อกลับ (Line ID / อีเมล): ${formData.contact}\n\n` +
+      `-----------------------------------------\n` +
+      `ข้อความนี้สร้างขึ้นโดยอัตโนมัติจากเว็บบล็อกของท่าน เพื่ออำนวยความสะดวกในการติดต่อกลับลูกค้าค่ะ`;
+
+    const mailtoUri = `mailto:proudlifeinsurance@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
+    
+    // Launch mail window
+    window.location.href = mailtoUri;
+    
     setIsSubmitted(true);
     
-    // Auto close after 3 seconds on success
+    // Auto close after 5 seconds on success
     setTimeout(() => {
       setIsSubmitted(false);
       onClose();
-    }, 3000);
+    }, 5000);
   };
 
   return (

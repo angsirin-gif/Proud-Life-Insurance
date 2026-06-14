@@ -13,8 +13,22 @@ export const ContactSection = ({ defaultPlan }: { defaultPlan?: string }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send data to your API or Firebase
-    console.log('Form Submitted:', formData);
+    
+    // Construct pre-filled mailto content
+    const subject = `[Proud Life Insurance] สนใจแผนประกัน - คุณ ${formData.name}`;
+    const mailBody = `สวัสดีค่ะ พี่ฝ้าย\n\nมีผู้สนใจรายละเอียดแผนประกันติดต่อมาจากเว็บไซต์ Proud Life Insurance มีข้อมูลดังนี้ค่ะ:\n\n` +
+      `- ชื่อ-นามสกุล: ${formData.name}\n` +
+      `- เบอร์โทรศัพท์: ${formData.phone}\n` +
+      `- แผนประกันที่สนใจ: ${formData.plan}\n` +
+      `- รายละเอียดเพิ่มเติม: ${formData.note || 'ไม่มีระบุ'}\n\n` +
+      `-----------------------------------------\n` +
+      `ข้อความนี้สร้างขึ้นโดยอัตโนมัติจากเว็บบล็อกของท่าน เพื่ออำนวยความสะดวกในการติดต่อกลับลูกค้าค่ะ`;
+    
+    const mailtoUri = `mailto:proudlifeinsurance@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
+    
+    // Launch mail window
+    window.location.href = mailtoUri;
+    
     setIsSubmitted(true);
     
     // Auto-reset after 5 seconds
