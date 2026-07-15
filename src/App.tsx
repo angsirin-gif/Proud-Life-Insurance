@@ -28,6 +28,12 @@ import Articles from './pages/Articles';
 import ArticleDetail from './pages/ArticleDetail';
 import AllProducts from './pages/AllProducts';
 
+// Insurance Plans by Needs
+import Kids0_6Insurance from './pages/needs/Kids0_6Insurance';
+import Kids6_10Insurance from './pages/needs/Kids6_10Insurance';
+import Teens11_19Insurance from './pages/needs/Teens11_19Insurance';
+import WorkingHealthInsurance from './pages/needs/WorkingHealthInsurance';
+
 // Individual Products
 import LifeReady from './pages/products/LifeReady';
 import TwelvePL from './pages/products/TwelvePL';
@@ -55,10 +61,17 @@ import { useConsultation } from './context/ConsultationContext';
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mobileInsuranceOpen, setMobileInsuranceOpen] = useState(false);
+  const [mobileParentOpen, setMobileParentOpen] = useState<Record<string, boolean>>({});
   const [mobileSubCategoriesOpen, setMobileSubCategoriesOpen] = useState<Record<string, boolean>>({});
   const { isOpen: isConsultModalOpen, openConsultation, closeConsultation } = useConsultation();
   const location = useLocation();
+
+  const toggleParentMenu = (name: string) => {
+    setMobileParentOpen(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
 
   const toggleSubCategory = (title: string) => {
     setMobileSubCategoriesOpen(prev => ({
@@ -71,7 +84,7 @@ export default function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
     setIsMenuOpen(false);
-    setMobileInsuranceOpen(false);
+    setMobileParentOpen({});
     setMobileSubCategoriesOpen({});
   }, [location.pathname]);
 
@@ -168,6 +181,13 @@ export default function App() {
     }
   ];
 
+  const needsCategories = [
+    { name: 'ประกันสุขภาพเด็กเล็ก 0 - 5 ปี', href: '/needs/kids-0-5' },
+    { name: 'ประกันสุขภาพเด็กโต 6 - 10 ปี', href: '/needs/kids-6-10' },
+    { name: 'ประกันสุขภาพวัยรุ่น 11 - 19 ปี', href: '/needs/teens-11-19' },
+    { name: 'ประกันสุขภาพ วัยทำงาน', href: '/needs/working-health' }
+  ];
+
   const navLinks = [
     { name: 'หน้าหลัก', href: '/', active: location.pathname === '/' },
     { 
@@ -175,6 +195,12 @@ export default function App() {
       href: '#', 
       active: (location.pathname.includes('insurance') || location.pathname.split('/').length > 2) && location.pathname !== '/contact' && location.pathname !== '/articles',
       subItems: categories
+    },
+    {
+      name: 'แผนประกันตามความต้องการ',
+      href: '#',
+      active: location.pathname.startsWith('/needs'),
+      subItems: needsCategories
     },
     { name: 'สาระประกัน', href: '/articles', active: location.pathname === '/articles' },
     { name: 'ติดต่อเรา', href: '/contact', active: location.pathname === '/contact' },
@@ -289,50 +315,61 @@ export default function App() {
                 {link.subItems ? (
                   <div className="space-y-2">
                     <button 
-                      onClick={() => setMobileInsuranceOpen(!mobileInsuranceOpen)}
+                      onClick={() => toggleParentMenu(link.name)}
                       className="w-full flex items-center justify-between py-2 text-xl font-bold text-on-surface hover:text-primary transition-colors text-left focus:outline-none cursor-pointer"
                     >
                       <span>{link.name}</span>
                       <ChevronDown 
                         size={20} 
-                        className={`text-primary transition-transform duration-300 ${mobileInsuranceOpen ? 'rotate-180' : ''}`} 
+                        className={`text-primary transition-transform duration-300 ${mobileParentOpen[link.name] ? 'rotate-180' : ''}`} 
                       />
                     </button>
                     
                     {/* Collapsible Category Cards */}
-                    {mobileInsuranceOpen && (
+                    {mobileParentOpen[link.name] && (
                       <div className="pl-4 space-y-4 border-l-2 border-primary/10 mt-2">
                         {link.subItems.map((sub: any) => (
                           <div key={sub.title || sub.name} className="space-y-2">
-                            <button
-                              onClick={() => toggleSubCategory(sub.title || sub.name)}
-                              className="w-full flex items-center justify-between py-1.5 text-base font-bold text-on-surface-variant hover:text-primary transition-colors text-left focus:outline-none cursor-pointer"
-                            >
-                              <span>{sub.title || sub.name}</span>
-                              {sub.subItems && (
-                                <ChevronDown 
-                                  size={16} 
-                                  className={`text-on-surface-variant/70 transition-transform duration-300 ${mobileSubCategoriesOpen[sub.title || sub.name] ? 'rotate-180' : ''}`} 
-                                />
-                              )}
-                            </button>
-                            
-                            {sub.subItems && mobileSubCategoriesOpen[sub.title || sub.name] && (
-                              <div className="pl-4 space-y-2 border-l-2 border-secondary/20 mt-1">
-                                {sub.subItems.map((child: any) => (
-                                  <Link 
-                                    key={child.name}
-                                    to={child.href}
-                                    className="text-sm font-medium text-on-surface-variant/80 block py-1.5 hover:text-primary transition-colors"
-                                    onClick={() => {
-                                      setIsMenuOpen(false);
-                                      setMobileInsuranceOpen(false);
-                                    }}
-                                  >
-                                    {child.name}
-                                  </Link>
-                                ))}
-                              </div>
+                            {sub.subItems ? (
+                              <>
+                                <button
+                                  onClick={() => toggleSubCategory(sub.title || sub.name)}
+                                  className="w-full flex items-center justify-between py-1.5 text-base font-bold text-on-surface-variant hover:text-primary transition-colors text-left focus:outline-none cursor-pointer"
+                                >
+                                  <span>{sub.title || sub.name}</span>
+                                  <ChevronDown 
+                                    size={16} 
+                                    className={`text-on-surface-variant/70 transition-transform duration-300 ${mobileSubCategoriesOpen[sub.title || sub.name] ? 'rotate-180' : ''}`} 
+                                  />
+                                </button>
+                                
+                                {mobileSubCategoriesOpen[sub.title || sub.name] && (
+                                  <div className="pl-4 space-y-2 border-l-2 border-secondary/20 mt-1">
+                                    {sub.subItems.map((child: any) => (
+                                      <Link 
+                                        key={child.name}
+                                        to={child.href}
+                                        className="text-sm font-medium text-on-surface-variant/80 block py-1.5 hover:text-primary transition-colors"
+                                        onClick={() => {
+                                          setIsMenuOpen(false);
+                                        }}
+                                      >
+                                        {child.name}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <Link 
+                                to={sub.href}
+                                className="text-base font-bold text-on-surface-variant hover:text-primary transition-colors block py-1.5"
+                                onClick={() => {
+                                  setIsMenuOpen(false);
+                                }}
+                              >
+                                {sub.title || sub.name}
+                              </Link>
                             )}
                           </div>
                         ))}
@@ -392,6 +429,12 @@ export default function App() {
 
         <Route path="/pension-insurance" element={<PensionInsurance />} />
         <Route path="/pension-insurance/bumnan-smart-95" element={<BumnanSmart95 />} />
+
+        {/* Insurance Plans by Needs */}
+        <Route path="/needs/kids-0-5" element={<Kids0_6Insurance />} />
+        <Route path="/needs/kids-6-10" element={<Kids6_10Insurance />} />
+        <Route path="/needs/teens-11-19" element={<Teens11_19Insurance />} />
+        <Route path="/needs/working-health" element={<WorkingHealthInsurance />} />
         
         <Route path="/all-plans" element={<AllProducts />} />
         <Route path="/articles" element={<Articles />} />
